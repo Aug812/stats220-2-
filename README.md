@@ -6,6 +6,6 @@ I love stats220 because it is *fun* and **educational**.
 - I think STATS 220 is a very interesting subject.
 *study
 
-Here's a fun GIF to enjoy while studying stats220 or during your Valorant breaks.
+Here's a fun GIF to enjoy while studying stats220 or during your breaks.
 
 ![Funny math](https://i.imgflip.com/aminke.jpg)
