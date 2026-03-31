@@ -1,0 +1,138 @@
+---
+title: My dynamic report
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
+
+library(tidyverse)
+
+logged_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vRd6gPY3y4sbUCQonm7al3l3izO2Obztur_t3xGwrmIZ4_tNcZmN2QeLQHeoSuokzBUe7zYedECC91s/pub?gid=187295818&single=true&output=csv")
+
+study_data <- logged_data %>%
+  rename(
+    study_location = `1. Where did the study session take place?`,
+    start_time = `2. What time period did the study session start?`,
+    study_purpose = `3. What was the main purpose of this study session?`,
+    study_length = `4. How long was the study session in minutes?`
+  ) %>%
+  mutate(
+    study_length = as.numeric(study_length)
+  )
+
+summary_min <- min(study_data$study_length, na.rm = TRUE)
+summary_max <- max(study_data$study_length, na.rm = TRUE)
+summary_mean <- mean(study_data$study_length, na.rm = TRUE)
+total_sessions <- nrow(study_data)
+
+location_plot <- ggplot(study_data, aes(x = study_location)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = "Where Did UoA Students in My Sample Usually Study?",
+    x = "Study Location",
+    y = "Number of Study Sessions"
+  ) +
+  theme_minimal() +
+  coord_flip()
+
+purpose_plot <- ggplot(study_data, aes(x = study_purpose)) +
+  geom_bar(fill = "coral") +
+  labs(
+    title = "Number of Study Sessions by Purpose",
+    x = "Study Purpose",
+    y = "Number of Study Sessions"
+  ) +
+  theme_minimal() +
+  coord_flip()
+
+time_plot <- ggplot(study_data, aes(x = start_time)) +
+  geom_bar(fill = "mediumpurple") +
+  labs(
+    title = "When Do I Usually Start Studying?",
+    x = "Time Period",
+    y = "Number of Study Sessions"
+  ) +
+  theme_minimal() +
+  coord_flip()
+
+```
+
+
+```{css}
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: #4B0D57;
+  background-color: #f5f7fa;
+  padding: 24px;
+}
+
+h2, h3 {
+  color: #4B7;
+}
+
+h2 {
+  font-size: 2em;
+  margin-bottom: 12px;
+}
+
+h3 {
+  margin-top: 28px;
+  border-left: 5px solid #6C8EBF;
+  padding-left: 10px;
+}
+
+p {
+  margin-bottom: 14px;
+}
+
+ul {
+  background-color: #ffffff;
+  border: 1px solid #d9e2f3;
+  border-radius: 8px;
+  padding: 16px 20px 16px 35px;
+  margin-bottom: 22px;
+}
+
+pre {
+  background-color: #FFF200;
+  border-radius: 6px;
+}
+
+img {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #FFF200;
+  border-radius: 8px;
+  background-color: #ffffff;
+  padding: 8px;
+}
+```
+
+## Study Session Patterns
+
+This dynamic report summarises the study session data I collected over time.
+
+I recorded `r total_sessions` study sessions in total.
+
+The average study session length was `r round(summary_mean, 1)` minutes.
+
+The shortest study session was `r summary_min` minutes, and the longest was `r summary_max` minutes.
+
+### Study location distribution
+
+```{r}
+print(location_plot)
+```
+
+This bar chart shows where I studied most often.
+
+### Study purpose distribution
+
+```{r}
+print(purpose_plot)
+```
+
+This bar chart shows the most common purpose of my study sessions.
