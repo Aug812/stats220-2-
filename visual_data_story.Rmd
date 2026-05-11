@@ -1,3 +1,36 @@
+---
+title: My visual data story
+output: html_document
+---
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
+```
+
+```{js}
+$(function() {
+  $(".level2").css('visibility', 'hidden');
+  $(".level2").first().css('visibility', 'visible');
+  $(".container-fluid").height($(".container-fluid").height() + 300);
+  $(window).on('scroll', function() {
+    $('h2').each(function() {
+      var h2Top = $(this).offset().top - $(window).scrollTop();
+      var windowHeight = $(window).height();
+      if (h2Top >= 0 && h2Top <= windowHeight / 2) {
+        $(this).parent('div').css('visibility', 'visible');
+      } else if (h2Top > windowHeight / 2) {
+        $(this).parent('div').css('visibility', 'hidden');
+      }
+    });
+  });
+})
+```
+
+```{css}
+.figcaption {display: none}
+```
 library(tidyverse)
 library(lubridate)
 library(stringr)
@@ -13,9 +46,22 @@ colnames(logged_data) <- c("Timestamp", "activity", "location", "time_period")
 # Clean and prepare the data
 logged_data <- logged_data %>%
   mutate(
+    Timestamp = parse_date_time(
+      Timestamp,
+      orders = c("dmy HMS", "mdy HMS", "ymd HMS", "dmy IMp", "mdy IMp")
+    ),
     activity = as.factor(activity),
     location = as.factor(location),
-    time_period = as.factor(time_period),
+    time_period = factor(
+      time_period,
+      levels = c(
+        "Morning (6:00 am–11:59 am)",
+        "Afternoon (12:00 pm–5:59 pm)",
+        "Evening (6:00 pm–9:59 pm)",
+        "Late night (10:00 pm–1:59 am)"
+      )
+    ),
+    hour = hour(Timestamp),
     strength_training = if_else(
       str_detect(activity, "Strength Training"),
       "Yes",
@@ -76,4 +122,36 @@ activity_time_plot <- ggplot(activity_time_summary,
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 activity_time_plot
+
+# Plot 4: Observations by hour of the 
+
+hour_summary <- logged_data %>%
+  group_by(hour) %>%
+  summarise(
+    observations = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(hour)
+
+hour_plot <- ggplot(hour_summary, aes(x = hour, y = observations)) +
+  geom_line(group = 1, colour = "purple") +
+  geom_point(colour = "purple", size = 2) +
+  labs(
+    title = "Number of Observations by Hour of the Day",
+    x = "Hour of the Day",
+    y = "Number of Observations"
+  ) +
+  theme_minimal()
+
+hour_plot
+
+
+
+
+
+
+
+
+
+
 
