@@ -1,1 +1,79 @@
+library(tidyverse)
+library(lubridate)
+library(stringr)
+
+# Read the CSV data from my Project 2 Google Form
+data_url <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vRiqEG6I5hXeg7G_AUod36rHLdspdr5f_EtcdSmT8Z6ztN7D6iJzCp4HL_4Q7Ety9g-i9l6UKqIW8rc/pub?output=csv"
+
+logged_data <- read_csv(data_url)
+
+# Rename the columns to make them easier to use in R
+colnames(logged_data) <- c("Timestamp", "activity", "location", "time_period")
+
+# Clean and prepare the data
+logged_data <- logged_data %>%
+  mutate(
+    activity = as.factor(activity),
+    location = as.factor(location),
+    time_period = as.factor(time_period),
+    strength_training = if_else(
+      str_detect(activity, "Strength Training"),
+      "Yes",
+      "No"
+    )
+  )
+
+# Plot 1: Activity types
+activity_plot <- ggplot(logged_data, aes(x = activity)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = "Observed Activity Types",
+    x = "Activity Type",
+    y = "Number of Observations"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+activity_plot
+
+
+# Plot 2: Observations by location
+location_summary <- logged_data %>%
+  group_by(location) %>%
+  summarise(
+    observations = n(),
+    .groups = "drop"
+  )
+
+location_plot <- ggplot(location_summary, 
+                        aes(x = reorder(location, observations), y = observations)) +
+  geom_col(fill = "lightgreen") +
+  labs(
+    title = "Number of Observations by Location",
+    x = "Location",
+    y = "Number of Observations"
+  ) +
+  theme_minimal() +
+  coord_flip()
+
+location_plot
+
+
+# Plot 3: Activity types across time periods
+activity_time_summary <- logged_data %>%
+  count(activity, time_period)
+
+activity_time_plot <- ggplot(activity_time_summary,
+                             aes(x = time_period, y = activity, size = n)) +
+  geom_point(alpha = 0.7) +
+  labs(
+    title = "Activity Types Across Different Time Periods",
+    x = "Time Period",
+    y = "Activity Type",
+    size = "Number of Observations"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+activity_time_plot
 
